@@ -42,13 +42,22 @@ async function connectMongo(){
     return mongoose.connect(connectionMongo.url, connectionMongo.params)
 }
 
-const server = connectMongo().then(app.listen(PORT, () => {
-    console.log("Database Connected!");
-})).catch((err) => {
-    console.log(err);
-})
+// const server = connectMongo().then(app.listen(PORT, () => {
+//     console.log("Database Connected!");
+// })).catch((err) => {
+//     console.log(err);
+// })
 
-const io = socketIO(server, {cors: {
+const server_app = app.listen(PORT, () => {
+    console.log(`Port Running: ${PORT}`)
+    connectMongo().then(() => {
+        console.log("Database Initialized!");
+    }).catch((err) => {
+        console.log(err);
+    })
+});
+
+const io = socketIO(server_app, {cors: {
     origin: "*",
     methods: "*",
     allowedHeaders: ["my-custom-header"],
@@ -66,91 +75,61 @@ function makeid(length) {
    return result;
 }
 
-// const jwtverifier = (req, res, next) => {
-//     const tokenFromUser = req.headers["x-access-token"];
-//     const tokenFromSeller = req.headers["x-access-tokenseller"];
+const jwtverifier = (req, res, next) => {
+    const tokenFromCommuter = req.headers["x-access-tokencommuter"];
+    const tokenFromDriver = req.headers["x-access-tokendriver"];
 
-//     if(!tokenFromUser && !tokenFromSeller){
-//         res.send({status: false, message: "No Token Received!"});
-//     }
-//     else{
-//         if(tokenFromUser && !tokenFromSeller){
-//             jwt.verify(tokenFromUser, "shopperiaprojectinsia102", (err, decode) => {
-//                 if(err){
-//                     res.send({status: false, message: "Token Denied!"});
-//                 }
-//                 else{
-//                     req.userTokenID = decode.id;
-//                     req.userTokenUserName = decode.userName;
-//                     req.acc = "buyer";
-//                     // console.log(decode.userName);
-//                     // next();
-//                     db.query("SELECT ver_status_one FROM verification_data WHERE user_id = ?", [decode.userName], (err, result) => {
-//                         if(err){
-//                             res.send({status: false, message: "Token Denied!"});
-//                         }
-//                         else{
-//                             if(result.length == 0){
-//                                 res.send({status: false, message: "Token Denied!"});
-//                             }
-//                             else{
-//                                 if(result[0].ver_status_one == "unverified"){
-//                                     res.send({status: false, message: "Token Denied!"});
-//                                 }
-//                                 else{
-//                                     next();
-//                                 }
-//                             }
-//                         }
-//                     })
-//                 }
-//             })
-//         }
-//         else if(tokenFromSeller && !tokenFromUser){
-//             jwt.verify(tokenFromSeller, "shopperiaprojectinsia102", (err, decode) => {
-//                 if(err){
-//                     res.send({status: false, message: "Token Denied!"});
-//                 }
-//                 else{
-//                     const shopID = decode.userName;
-//                     db.query("SELECT shopName FROM seller_accounts WHERE shopID = ?", shopID, (err, result) => {
-//                         if(err){
-//                             console.log(err);
-//                         }
-//                         else{
-//                             req.userTokenID = decode.id;
-//                             req.userTokenUserName = decode.userName;
-//                             req.shop
-//                             req.acc = "seller";
-//                             req.shopName = result.map((item) => item.shopName).join("");
-//                             // console.log(result.map((item) => item.shopName));
-//                             // next();
-//                             db.query("SELECT ver_status_one FROM verification_data WHERE user_id = ?", [decode.userName], (err, result) => {
-//                                 if(err){
-//                                     res.send({status: false, message: "Token Denied!"});
-//                                 }
-//                                 else{
-//                                     if(result.length == 0){
-//                                         res.send({status: false, message: "Token Denied!"});
-//                                     }
-//                                     else{
-//                                         if(result[0].ver_status_one == "unverified"){
-//                                             res.send({status: false, message: "Token Denied!"});
-//                                         }
-//                                         else{
-//                                             next();
-//                                         }
-//                                     }
-//                                 }
-//                             })
-//                         }
-//                     })
-//                 }
-//             })
-//             // console.log(tokenFromSeller);
-//         }
-//     }
-// }
+    if(!tokenFromCommuter && !tokenFromDriver){
+        res.send({status: false, message: "No Token Received!"});
+    }
+    else{
+        if(tokenFromCommuter && !tokenFromDriver){
+            jwt.verify(tokenFromCommuter, "transpotrackverification", (err, decode) => {
+                if(err){
+                    res.send({status: false, message: "Token Denied!"});
+                }
+                else{
+                    // console.log(decode);
+                    const userID = decode.userID;
+
+                    CommuterRegister.findOne({userID: userID}, (err, result) => {
+                        if(err){
+                            console.log(err);
+                        }
+                        else{
+                            // console.log(result)
+                            req.userData = result
+                            next();
+                        }
+                    })
+                }
+            })
+        }
+        else if(tokenFromDriver && !tokenFromCommuter){
+            jwt.verify(tokenFromDriver, "transpotrackverification", (err, decode) => {
+                if(err){
+                    res.send({status: false, message: "Token Denied!"});
+                }
+                else{
+                    // console.log(decode);
+                    const userID = decode.userID;
+
+                    DriverRegister.findOne({userID: userID}, (err, result) => {
+                        if(err){
+                            console.log(err);
+                        }
+                        else{
+                            // console.log(result)
+                            req.userData = result
+                            next();
+                        }
+                    })
+                }
+            })
+            // console.log(tokenFromSeller);
+        }
+    }
+}
 
 app.post('/registercommuter', (req, res) => {
     // console.log(req.body);
@@ -248,3 +227,21 @@ app.post('/getLogin', (req, res) => {
 
     // console.log(req.body);
 })
+
+app.get('/userData', jwtverifier, (req, res) => {
+    // console.log(req.userData);
+    res.send(req.userData);
+});
+
+
+//SOCKET SECTION
+
+io.on("connection", socket => {
+    
+    socket.on("dataTransmit", userData => {
+        socket.broadcast.emit("dataShare", userData);
+    })
+
+})
+
+//SOCKET SECTION
