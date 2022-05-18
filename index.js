@@ -27,6 +27,8 @@ const connectionMongo = require("./connection/connection");
 
 const CommuterRegister = require("./schema/register");
 const DriverRegister = require("./schema/registerDriver");
+const CommuterTravel = require("./schema/traveldatacommuter");
+const DriverTravel = require("./schema/traveldatadriver");
 
 app.use(bodyParser.urlencoded({extended: false }));
 app.use(bodyParser.json());
@@ -134,8 +136,10 @@ const jwtverifier = (req, res, next) => {
 app.post('/registercommuter', (req, res) => {
     // console.log(req.body);
 
+    var user_id = `commuter_${makeid(7)}`;
+
     const commuterData = new CommuterRegister({
-        userID: `commuter_${makeid(7)}`,
+        userID: user_id,
         userType: "Commuter",
         firstName: req.body.firstName,
         middleName: req.body.middleName,
@@ -146,7 +150,18 @@ app.post('/registercommuter', (req, res) => {
     })
 
     commuterData.save().then(() => {
-        res.send({status: true, message: "Successfully Registered as Commuter!"});
+        // res.send({status: true, message: "Successfully Registered as Commuter!"});
+        const commuterTravel = new CommuterTravel({
+            userID: user_id,
+            userType: "Commuter",
+            destination: "Not Applied"
+        })
+
+        commuterTravel.save().then(() => {
+            res.send({status: true, message: "Successfully Registered as Commuter!"});
+        }).catch((err) => {
+            res.send({status: false, message: "Cannot Successfully Register!"});
+        })
     }).catch((err) => {
         res.send({status: false, message: "Cannot Successfully Register!"});
     });
