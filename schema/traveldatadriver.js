@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const traveldatacommuter = mongoose.Schema({
+const traveldatadriver = mongoose.Schema({
     userID: {type: mongoose.Schema.Types.Mixed, required: true},
     userType: {type: String, required: true},
     destination: {type: mongoose.Schema.Types.Mixed, required: true},
@@ -9,4 +9,4 @@ const traveldatacommuter = mongoose.Schema({
     vehicle: {type: mongoose.Schema.Types.Mixed, required: true}
 })
 
-module.exports = mongoose.model("CommuterTravelData", traveldatacommuter, 'user_travel_data');
+module.exports = mongoose.model("DriverTravelData", traveldatadriver, 'user_travel_data');

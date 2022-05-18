@@ -170,8 +170,10 @@ app.post('/registercommuter', (req, res) => {
 app.post('/registerdriver', (req, res) => {
     // console.log(req.body);
 
+    var user_id = `driver_${makeid(7)}`;
+
     const driverData = new DriverRegister({
-        userID: `driver_${makeid(7)}`,
+        userID: user_id,
         userType: "Driver",
         firstName: req.body.firstName,
         middleName: req.body.middleName,
@@ -184,7 +186,21 @@ app.post('/registerdriver', (req, res) => {
     })
 
     driverData.save().then(() => {
-        res.send({status: true, message: "Successfully Registered as Driver!"});
+        // res.send({status: true, message: "Successfully Registered as Driver!"});
+        const driverTravel = new DriverTravel({
+            userID: user_id,
+            userType: "Driver",
+            destination: "Not Applied",
+            destination_one: "Not Applied",
+            destination_two: "Not Applied",
+            vehicle: "Not Applied"
+        })
+
+        driverTravel.save().then(() => {
+            res.send({status: true, message: "Successfully Registered as Driver!"})
+        }).catch((err) => {
+            res.send({status: false, message: "Cannot Successfully Register!"});
+        })
     }).catch((err) => {
         res.send({status: false, message: "Cannot Successfully Register!"});
     });
