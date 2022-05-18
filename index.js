@@ -264,6 +264,75 @@ app.get('/userData', jwtverifier, (req, res) => {
     res.send(req.userData);
 });
 
+app.get('/userTravel/:userType', jwtverifier, (req, res) => {
+
+    const userType = req.params.userType;
+
+    if(userType == "Commuter"){
+        CommuterTravel.findOne({userID: req.userData.userID, userType: userType}, (err, result) => {
+            if(err){
+                console.log(err);
+            }
+            else{
+                // console.log(result);
+                if(result == null){
+                    // console.log("Yes");
+                    const commuterExcessData = {
+                        userID: req.userData.userID,
+                        userType: "Commuter",
+                        destination: "Not Applied"
+                    }
+
+                    const commuterTravel = new CommuterTravel(commuterExcessData)
+            
+                    commuterTravel.save().then(() => {
+                        res.send({status: true, result: commuterExcessData});
+                    }).catch((err) => {
+                        res.send({status: false, message: "Cannot Successfully Register!"});
+                    })
+                }
+                else{
+                    res.send({status: true, result: result});
+                }
+            }
+        })
+    }
+    else if(userType == "Driver"){
+        DriverTravel.findOne({userID: req.userData.userID, userType: userType}, (err, result) => {
+            if(err){
+                console.log(err);
+            }
+            else{
+                // console.log(result);
+                if(result == null){
+                    // console.log("Yes");
+                    const driverExcessData = {
+                        userID: req.userData.userID,
+                        userType: "Driver",
+                        destination: "Not Applied",
+                        destination_one: "Not Applied",
+                        destination_two: "Not Applied",
+                        vehicle: "Not Applied"
+                    }
+
+                    const driverTravel = new DriverTravel(driverExcessData)
+            
+                    driverTravel.save().then(() => {
+                        res.send({status: true, result: driverExcessData});
+                    }).catch((err) => {
+                        res.send({status: false, message: "Account Update Error!"});
+                    })
+                }
+                else{
+                    res.send({status: true, result: result});
+                }
+            }
+        })
+    }
+
+    // console.log(req.userData.userID);
+})
+
 
 //SOCKET SECTION
 
