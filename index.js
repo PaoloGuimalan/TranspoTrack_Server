@@ -333,6 +333,23 @@ app.get('/userTravel/:userType', jwtverifier, (req, res) => {
     // console.log(req.userData.userID);
 })
 
+app.post('/commuterUpdateDestination', jwtverifier, (req, res) => {
+    const userID = req.body.userID;
+    const destination = req.body.destination;
+
+    CommuterTravel.updateOne({userID: userID}, {destination: destination}, (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({status: false, message: "Cannot update destination!"})
+        }
+        else{
+            res.send({status: true, message: "Destination has been Updated!"});
+        }
+    })
+
+    // console.log(userID, destination);
+})
+
 
 //SOCKET SECTION
 
