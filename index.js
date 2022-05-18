@@ -146,7 +146,7 @@ app.post('/registercommuter', (req, res) => {
     })
 
     commuterData.save().then(() => {
-        res.send({status: true, message: "Successfully Registered!"});
+        res.send({status: true, message: "Successfully Registered as Commuter!"});
     }).catch((err) => {
         res.send({status: false, message: "Cannot Successfully Register!"});
     });
@@ -169,7 +169,7 @@ app.post('/registerdriver', (req, res) => {
     })
 
     driverData.save().then(() => {
-        res.send({status: true, message: "Successfully Registered!"});
+        res.send({status: true, message: "Successfully Registered as Driver!"});
     }).catch((err) => {
         res.send({status: false, message: "Cannot Successfully Register!"});
     });
