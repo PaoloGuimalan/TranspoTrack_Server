@@ -366,6 +366,24 @@ app.post('/commuterUpdateDestination', jwtverifier, (req, res) => {
     // console.log(userID, destination);
 })
 
+app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
+    const userID = req.body.userID;
+    const destination_one = req.body.destination_one;
+    const destination_two = req.body.destination_two;
+
+    DriverTravel.updateOne({userID: userID}, {destination_one: destination_one, destination_two: destination_two}, (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({status: false, message: "Cannot Update Route!"})
+        }
+        else{
+            res.send({status: true, message: "Route has been Updated!"});
+        }
+    })
+
+    // console.log(userID, destination_one, destination_two);
+})
+
 
 //SOCKET SECTION
 
