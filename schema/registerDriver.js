@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const driverRegister = mongoose.Schema({
     userID: {type: mongoose.Schema.Types.Mixed, required: true},
+    companyID: {type: mongoose.Schema.Types.Mixed, required: true},
     userType: {type: String, required: true},
     firstName: {type: String, required: true},
     middleName: {type: String, required: true},

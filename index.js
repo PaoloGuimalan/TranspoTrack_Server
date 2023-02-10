@@ -29,6 +29,7 @@ const CommuterRegister = require("./schema/register");
 const DriverRegister = require("./schema/registerDriver");
 const CommuterTravel = require("./schema/traveldatacommuter");
 const DriverTravel = require("./schema/traveldatadriver");
+const CompanyRegData = require("./schema/companyRegData")
 
 app.use(bodyParser.urlencoded({extended: false }));
 app.use(bodyParser.json());
@@ -169,41 +170,61 @@ app.post('/registercommuter', (req, res) => {
 
 app.post('/registerdriver', (req, res) => {
     // console.log(req.body);
+    const companyID = req.body.companyID;
 
     var user_id = `driver_${makeid(7)}`;
 
-    const driverData = new DriverRegister({
-        userID: user_id,
-        userType: "Driver",
-        firstName: req.body.firstName,
-        middleName: req.body.middleName,
-        lastName: req.body.lastName,
-        mobileNumber: req.body.mobileNumber,
-        email: req.body.email,
-        pass: req.body.pass,
-        dlicense: req.body.dlicense,
-        age: req.body.age
-    })
-
-    driverData.save().then(() => {
-        // res.send({status: true, message: "Successfully Registered as Driver!"});
-        const driverTravel = new DriverTravel({
-            userID: user_id,
-            userType: "Driver",
-            destination: "Not Applied",
-            destination_one: "Not Applied",
-            destination_two: "Not Applied",
-            vehicle: "Not Applied"
+    if(companyID == ""){
+        res.send({status: false, message: "Please provide the Company ID where you work"})
+    }
+    else{
+        CompanyRegData.findOne({companyID: companyID}, (err1, result1) => {
+            if(err1){
+                console.log(err1);
+                res.send({status: false, message: "Error scanning Company ID"})
+            }
+            else{
+                if(result1 != null){
+                    const driverData = new DriverRegister({
+                        userID: user_id,
+                        userType: "Driver",
+                        firstName: req.body.firstName,
+                        middleName: req.body.middleName,
+                        lastName: req.body.lastName,
+                        mobileNumber: req.body.mobileNumber,
+                        email: req.body.email,
+                        pass: req.body.pass,
+                        dlicense: req.body.dlicense,
+                        age: req.body.age,
+                        companyID: companyID
+                    })
+                
+                    driverData.save().then(() => {
+                        // res.send({status: true, message: "Successfully Registered as Driver!"});
+                        const driverTravel = new DriverTravel({
+                            userID: user_id,
+                            userType: "Driver",
+                            destination: "Not Applied",
+                            destination_one: "Not Applied",
+                            destination_two: "Not Applied",
+                            vehicle: "Not Applied"
+                        })
+                
+                        driverTravel.save().then(() => {
+                            res.send({status: true, message: "Successfully Registered as Driver!"})
+                        }).catch((err) => {
+                            res.send({status: false, message: "Cannot Successfully Register!"});
+                        })
+                    }).catch((err) => {
+                        res.send({status: false, message: "Cannot Successfully Register!"});
+                    });
+                }
+                else{
+                    res.send({status: false, message: "Company ID do not exist"})
+                }
+            }
         })
-
-        driverTravel.save().then(() => {
-            res.send({status: true, message: "Successfully Registered as Driver!"})
-        }).catch((err) => {
-            res.send({status: false, message: "Cannot Successfully Register!"});
-        })
-    }).catch((err) => {
-        res.send({status: false, message: "Cannot Successfully Register!"});
-    });
+    }
 })
 
 app.post('/getLogin', (req, res) => {
