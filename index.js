@@ -31,6 +31,8 @@ const CommuterTravel = require("./schema/traveldatacommuter");
 const DriverTravel = require("./schema/traveldatadriver");
 const CompanyRegData = require("./schema/companyRegData")
 
+const activeDriversList = Object.create(null)
+
 app.use(bodyParser.urlencoded({extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -81,15 +83,19 @@ function makeid(length) {
 const jwtverifier = (req, res, next) => {
     const tokenFromCommuter = req.headers["x-access-tokencommuter"];
     const tokenFromDriver = req.headers["x-access-tokendriver"];
+    // console.log("Err")
 
     if(!tokenFromCommuter && !tokenFromDriver){
         res.send({status: false, message: "No Token Received!"});
+        // console.log("Err")
     }
     else{
+        // console.log("Err")
         if(tokenFromCommuter && !tokenFromDriver){
             jwt.verify(tokenFromCommuter, "transpotrackverification", (err, decode) => {
                 if(err){
                     res.send({status: false, message: "Token Denied!"});
+                    console.log(err)
                 }
                 else{
                     // console.log(decode);
@@ -98,10 +104,12 @@ const jwtverifier = (req, res, next) => {
                     CommuterRegister.findOne({userID: userID}, (err, result) => {
                         if(err){
                             console.log(err);
+                            console.log("Err")
                         }
                         else{
                             // console.log(result)
-                            req.userData = result
+                            console.log("Err")
+                            req.params.userData = result
                             next();
                         }
                     })
@@ -123,7 +131,7 @@ const jwtverifier = (req, res, next) => {
                         }
                         else{
                             // console.log(result)
-                            req.userData = result
+                            req.params.userData = result
                             next();
                         }
                     })
@@ -133,6 +141,10 @@ const jwtverifier = (req, res, next) => {
         }
     }
 }
+
+app.get('/liveData', (req, res) => {
+    res.send(activeDriversList)
+})
 
 app.post('/registercommuter', (req, res) => {
     // console.log(req.body);
@@ -403,6 +415,26 @@ app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
     })
 
     // console.log(userID, destination_one, destination_two);
+})
+
+app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
+    const userData = req.params.userData
+    const latitude = req.params.latitude;
+    const longitude = req.params.longitude
+
+    // console.log({
+    //     ...userData,
+    //     latitude: latitude,
+    //     longitude: longitude
+    // })
+
+    activeDriversList[userData.userID] = {
+        ...userData._doc,
+        latitude: latitude,
+        longitude: longitude
+    }
+
+    res.send({status: true, message: "OK"})
 })
 
 
