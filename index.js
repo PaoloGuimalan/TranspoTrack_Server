@@ -387,12 +387,12 @@ app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
 
 //SOCKET SECTION
 
-io.on("connection", socket => {
+// io.on("connection", socket => {
     
-    socket.on("dataTransmit", userData => {
-        socket.broadcast.emit("dataShare", userData);
-    })
+//     socket.on("dataTransmit", userData => {
+//         socket.broadcast.emit("dataShare", userData);
+//     })
 
-})
+// })
 
 //SOCKET SECTION END
