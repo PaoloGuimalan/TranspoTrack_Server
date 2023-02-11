@@ -11,7 +11,8 @@ const driverRegister = mongoose.Schema({
     email: {type: mongoose.Schema.Types.Mixed, required: true},
     pass: {type: mongoose.Schema.Types.Mixed, required: true},
     dlicense: {type: mongoose.Schema.Types.Mixed, required: true},
-    age: {type: Number, required: true}
+    age: {type: Number, required: true},
+    status: Boolean
 })
 
 module.exports = mongoose.model("Driver", driverRegister, "user_accounts");

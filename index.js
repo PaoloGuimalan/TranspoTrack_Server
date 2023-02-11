@@ -125,14 +125,19 @@ const jwtverifier = (req, res, next) => {
                     // console.log(decode);
                     const userID = decode.userID;
 
-                    DriverRegister.findOne({userID: userID}, (err, result) => {
+                    DriverRegister.findOne({userID: userID, status: true}, (err, result) => {
                         if(err){
                             console.log(err);
                         }
                         else{
                             // console.log(result)
-                            req.params.userData = result
-                            next();
+                           if(result == null){
+                                res.send({status: false, message: "Token Invalid", reestablish: true})
+                           }
+                           else{
+                                req.params.userData = result
+                                next();
+                           }
                         }
                     })
                 }
@@ -208,7 +213,8 @@ app.post('/registerdriver', (req, res) => {
                         pass: req.body.pass,
                         dlicense: req.body.dlicense,
                         age: req.body.age,
-                        companyID: companyID
+                        companyID: companyID,
+                        status: false
                     })
                 
                     driverData.save().then(() => {
@@ -278,12 +284,17 @@ app.post('/getLogin', (req, res) => {
                     res.send({status: false, message: "No Existing Account!"})
                 }
                 else{
-                    const { userID, userType } = result;
-                    // console.log(userID, userType);
-                    const token = jwt.sign({userID}, "transpotrackverification", {
-                        expiresIn: 60 * 60 * 24 * 7
-                    })
-                    res.send({status: true, message: "Logged In!", token: token})
+                    if(result.status){
+                        const { userID, userType } = result;
+                        // console.log(userID, userType);
+                        const token = jwt.sign({userID}, "transpotrackverification", {
+                            expiresIn: 60 * 60 * 24 * 7
+                        })
+                        res.send({status: true, message: "Logged In!", token: token})
+                    }
+                    else{
+                        res.send({status: false, message: "Account Disabled"})
+                    }
                 }
             }
         })
