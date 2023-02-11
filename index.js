@@ -294,7 +294,7 @@ app.post('/getLogin', (req, res) => {
 
 app.get('/userData', jwtverifier, (req, res) => {
     // console.log(req.userData);
-    res.send(req.userData);
+    res.send({status: true, result: req.params.userData});
 });
 
 app.get('/userTravel/:userType', jwtverifier, (req, res) => {
@@ -331,7 +331,7 @@ app.get('/userTravel/:userType', jwtverifier, (req, res) => {
         })
     }
     else if(userType == "Driver"){
-        DriverTravel.findOne({userID: req.userData.userID, userType: userType}, (err, result) => {
+        DriverTravel.findOne({userID: req.params.userData.userID, userType: userType}, (err, result) => {
             if(err){
                 console.log(err);
             }
@@ -435,6 +435,22 @@ app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
     }
 
     res.send({status: true, message: "OK"})
+})
+
+app.get('/clearLiveDataDriver', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+
+    delete activeDriversList[userID]
+
+    res.send({status: true, message: "OK Delete"})
+})
+
+app.get('/subscribeDataDriver', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+
+    req.on("close", () => {
+        delete activeDriversList[userID]
+    })
 })
 
 
