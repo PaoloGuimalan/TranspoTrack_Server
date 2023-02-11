@@ -214,7 +214,8 @@ app.post('/registerdriver', (req, res) => {
                         dlicense: req.body.dlicense,
                         age: req.body.age,
                         companyID: companyID,
-                        status: false
+                        status: false,
+                        locationSharing: false
                     })
                 
                     driverData.save().then(() => {
@@ -430,6 +431,7 @@ app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
 
 app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
     const userData = req.params.userData
+    const infotoggle = req.params.userData.locationSharing
     const latitude = req.params.latitude;
     const longitude = req.params.longitude
 
@@ -439,11 +441,20 @@ app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
     //     longitude: longitude
     // })
 
-    activeDriversList[userData.userID] = {
-        ...userData._doc,
-        latitude: latitude,
-        longitude: longitude
+    if(infotoggle){
+        activeDriversList[userData.userID] = {
+            ...userData._doc,
+            latitude: latitude,
+            longitude: longitude
+        }
+        // console.log("TRUE", infotoggle)
     }
+    else{
+        // console.log("FALSE", infotoggle)
+        delete activeDriversList[userData.userID]
+    }
+
+    // console.log(infotoggle)
 
     res.send({status: true, message: "OK"})
 })
@@ -460,7 +471,32 @@ app.get('/subscribeDataDriver', jwtverifier, (req, res) => {
     const userID = req.params.userData.userID
 
     req.on("close", () => {
+        DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: false}, (err, result) => {
+            if(err){
+                console.log(err)
+                res.send({status: false, message: "Cannot Update location sharing settings"})
+            }
+            else{
+                res.send({status: true, message: `Location sharing disabled`})
+            }
+        })
+        
         delete activeDriversList[userID]
+    })
+})
+
+app.get('/locationSharingToggle/:infotoggle', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const infotoggle = req.params.infotoggle
+
+    DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: infotoggle}, (err, result) => {
+        if(err){
+            console.log(err)
+            res.send({status: false, message: "Cannot Update location sharing settings"})
+        }
+        else{
+            res.send({status: true, message: `Location sharing ${infotoggle? "enabled" : "disabled"}`})
+        }
     })
 })
 
