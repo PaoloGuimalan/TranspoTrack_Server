@@ -482,16 +482,6 @@ app.get('/clearLiveDataDriver', jwtverifier, (req, res) => {
 app.get('/subscribeDataDriver', jwtverifier, (req, res) => {
     const userID = req.params.userData.userID
 
-    DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: true}, (err, result) => {
-        if(err){
-            console.log(err)
-            // res.send({status: false, message: "Cannot Update location sharing settings"})
-        }
-        else{
-            // res.send({status: true, message: `Location sharing disabled`})
-        }
-    })
-
     req.on("close", () => {
         DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: false}, (err, result) => {
             if(err){
