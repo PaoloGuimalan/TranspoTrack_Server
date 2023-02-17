@@ -30,6 +30,7 @@ const DriverRegister = require("./schema/registerDriver");
 const CommuterTravel = require("./schema/traveldatacommuter");
 const DriverTravel = require("./schema/traveldatadriver");
 const CompanyRegData = require("./schema/companyRegData")
+const BusData = require("./schema/buses")
 
 const activeDriversList = Object.create(null)
 
@@ -135,8 +136,19 @@ const jwtverifier = (req, res, next) => {
                                 res.send({status: false, message: "Token Invalid", reestablish: true})
                            }
                            else{
-                                req.params.userData = result
-                                next();
+                                BusData.findOne({driverID: userID}, (err2, result2) => {
+                                    if(err2){
+                                        console.log(err2)
+                                        res.send({status: false, message: "Error scanning assigned bus"})
+                                    }
+                                    else{
+                                        req.params.userData = {
+                                            ...result._doc,
+                                            ...result2._doc
+                                        }
+                                        next();
+                                    }
+                                })
                            }
                         }
                     })
@@ -443,7 +455,7 @@ app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
 
     if(infotoggle){
         activeDriversList[userData.userID] = {
-            ...userData._doc,
+            ...userData,
             latitude: latitude,
             longitude: longitude
         }
@@ -469,6 +481,16 @@ app.get('/clearLiveDataDriver', jwtverifier, (req, res) => {
 
 app.get('/subscribeDataDriver', jwtverifier, (req, res) => {
     const userID = req.params.userData.userID
+
+    DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: true}, (err, result) => {
+        if(err){
+            console.log(err)
+            // res.send({status: false, message: "Cannot Update location sharing settings"})
+        }
+        else{
+            // res.send({status: true, message: `Location sharing disabled`})
+        }
+    })
 
     req.on("close", () => {
         DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: false}, (err, result) => {
