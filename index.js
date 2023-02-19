@@ -31,6 +31,10 @@ const CommuterTravel = require("./schema/traveldatacommuter");
 const DriverTravel = require("./schema/traveldatadriver");
 const CompanyRegData = require("./schema/companyRegData")
 const BusData = require("./schema/buses")
+const PostsData = require("./schema/postsdata")
+const RoutesData = require("./schema/routes")
+const BusStopsData = require("./schema/busstops")
+const AssignedRoutes = require("./schema/assignedRoute")
 
 const activeDriversList = Object.create(null)
 
@@ -508,6 +512,65 @@ app.get('/locationSharingToggle/:infotoggle', jwtverifier, (req, res) => {
         }
         else{
             res.send({status: true, message: `Location sharing ${infotoggle? "enabled" : "disabled"}`})
+        }
+    })
+})
+
+app.get('/getPosts', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+
+    PostsData.find({$or: [{ viewers: "all" }, { viewers: "drivers" }]}, (err, result) => {
+        if(err){
+            console.log(err)
+            res.send({status: false, message: "Unable to get posts"})
+        }
+        else{
+            // console.log(result);
+            res.send({status: true, result: result})
+        }
+    })
+})
+
+app.get('/enabledBusStops', jwtverifier, (req, res) => {
+    BusStopsData.find({status: true}, (err, result) => {
+        if(err){
+            res.send({ status: false, result: { message: "Cannot fetch Bus Stops" } })
+            console.log(err)
+        }
+        else{
+            res.send({ status: true, result: result })
+            // console.log(result)
+        }
+    })
+})
+
+app.get('/getDriverRoutes', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const companyID = req.params.userData.companyID
+
+    AssignedRoutes.findOne({companyID: companyID}, (err, result) => {
+        if(err){
+            console.log(err)
+            res.send({status: false, message: "Cannot scan assigned routes"})
+        }
+        else{
+            if(result != null){
+                var routeID = result.routeID
+
+                RoutesData.findOne({routeID: routeID}, (err2, result2) => {
+                    if(err2){
+                        console.log(err2)
+                        res.send({status: false, message: "Cannot scan route"})
+                    }
+                    else{
+                        res.send({status: true, result: result2})
+                    }
+                })
+                // console.log(routeID)
+            }
+            else{
+                res.send({status: false, message: "No Assigned Routes yet"})
+            }
         }
     })
 })
