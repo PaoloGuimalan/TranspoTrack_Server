@@ -130,7 +130,7 @@ const jwtverifier = (req, res, next) => {
                     // console.log(decode);
                     const userID = decode.userID;
 
-                    DriverRegister.findOne({userID: userID, status: true}, (err, result) => {
+                    DriverRegister.findOne({userID: userID, status: true}, {email: 0, pass: 0, mobileNumber: 0, age: 0}, (err, result) => {
                         if(err){
                             console.log(err);
                         }
@@ -146,11 +146,42 @@ const jwtverifier = (req, res, next) => {
                                         res.send({status: false, message: "Error scanning assigned bus"})
                                     }
                                     else{
-                                        req.params.userData = {
-                                            ...result._doc,
-                                            ...result2._doc
-                                        }
-                                        next();
+                                        var companyID = result2.companyID;
+                                        // AssignedRoutes.findOne({companyID: })
+                                        AssignedRoutes.findOne({companyID: companyID}, (err3, result3) => {
+                                            if(err3){
+                                                console.log(err3)
+                                                res.send({status: false, message: "Error scanning assigned routes"})
+                                            }
+                                            else{
+                                                if(result3 == null){
+                                                    req.params.userData = {
+                                                        ...result._doc,
+                                                        ...result2._doc
+                                                    }
+                                                    next();
+                                                }
+                                                else{
+                                                    var routeID = result3.routeID;
+
+                                                    RoutesData.findOne({routeID: routeID}, {stationList: 0, routePath: 0, dateAdded: 0, addedBy: 0}, (err4, result4) => {
+                                                        if(err4){
+                                                            console.log(err4)
+                                                            res.send({status: false, message: "Error scanning data of assigned routes"})
+                                                        }
+                                                        else{
+                                                            // console.log(result4)
+                                                            req.params.userData = {
+                                                                ...result._doc,
+                                                                ...result2._doc,
+                                                                ...result4._doc
+                                                            }
+                                                            next();
+                                                        }
+                                                    })
+                                                }
+                                            }
+                                        })
                                     }
                                 })
                            }
