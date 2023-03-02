@@ -164,7 +164,7 @@ const jwtverifier = (req, res, next) => {
                                                 else{
                                                     var routeID = result3.routeID;
 
-                                                    RoutesData.findOne({routeID: routeID}, {stationList: 0, routePath: 0, dateAdded: 0, addedBy: 0}, (err4, result4) => {
+                                                    RoutesData.findOne({routeID: routeID}, {stationList: 0, routePath: 0, dateAdded: 0, addedBy: 0, companyID: 0}, (err4, result4) => {
                                                         if(err4){
                                                             console.log(err4)
                                                             res.send({status: false, message: "Error scanning data of assigned routes"})
