@@ -35,6 +35,7 @@ const PostsData = require("./schema/postsdata")
 const RoutesData = require("./schema/routes")
 const BusStopsData = require("./schema/busstops")
 const AssignedRoutes = require("./schema/assignedRoute")
+const WaitingData = require("./schema/waiting");
 
 const activeDriversList = Object.create(null)
 
@@ -602,6 +603,37 @@ app.get('/getDriverRoutes', jwtverifier, (req, res) => {
             else{
                 res.send({status: false, message: "No Assigned Routes yet"})
             }
+        }
+    })
+})
+
+app.get('/getWaitingCount', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const companyID = req.params.userData.companyID
+
+    WaitingData.aggregate([
+        { $group: {
+            _id: "$busStopID",
+            count: { $sum: {
+                "$cond": [
+                  {
+                    "$eq": [
+                      "$status",
+                      "waiting"
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              } }
+        } }
+    ], (err, result) => {
+        if(err){
+            console.log(err)
+            res.send({status: false, message: "Error generating waiting count"})
+        }
+        else{
+            res.send({status: true, result: result})
         }
     })
 })
