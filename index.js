@@ -477,11 +477,14 @@ app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
     // console.log(userID, destination_one, destination_two);
 })
 
-app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
+app.get('/activeDriversRoute/:latitude/:longitude/:infotoggleclientstate', jwtverifier, (req, res) => {
     const userData = req.params.userData
     const infotoggle = req.params.userData.locationSharing
     const latitude = req.params.latitude;
     const longitude = req.params.longitude
+
+    const infotoggleclientstate = req.params.infotoggleclientstate
+    const userID = req.params.userData.userID
 
     // console.log({
     //     ...userData,
@@ -489,22 +492,38 @@ app.get('/activeDriversRoute/:latitude/:longitude', jwtverifier, (req, res) => {
     //     longitude: longitude
     // })
 
-    if(infotoggle){
-        activeDriversList[userData.userID] = {
-            ...userData,
-            latitude: latitude,
-            longitude: longitude
+    if(infotoggle == (infotoggleclientstate === 'true')){
+        if(infotoggle){
+            activeDriversList[userData.userID] = {
+                ...userData,
+                latitude: latitude,
+                longitude: longitude
+            }
+            // console.log("TRUE", infotoggle)
+            // console.log(infotoggleclientstate)
+            res.send({status: true, message: "OK"})
         }
-        // console.log("TRUE", infotoggle)
+        else{
+            // console.log("FALSE", infotoggle)
+            delete activeDriversList[userData.userID]
+            res.send({status: true, message: "OK"})
+        }
     }
     else{
-        // console.log("FALSE", infotoggle)
-        delete activeDriversList[userData.userID]
+        // console.log("STATE DIFFERENCE", { infotoggle: infotoggle, clientstate: (infotoggleclientstate === 'true') })
+        DriverRegister.findOneAndUpdate({userID: userID}, {locationSharing: infotoggleclientstate}, (err, result) => {
+            if(err){
+                console.log(err)
+                res.send({status: false, message: "Cannot Update location sharing settings"})
+            }
+            else{
+                // console.log(infotoggleclientstate)
+                res.send({status: true, message: "OK"})
+            }
+        })
     }
 
     // console.log(infotoggle)
-
-    res.send({status: true, message: "OK"})
 })
 
 app.get('/clearLiveDataDriver', jwtverifier, (req, res) => {
