@@ -86,6 +86,25 @@ function makeid(length) {
    return result;
 }
 
+function dateGetter(){
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    return today = mm + '/' + dd + '/' + yyyy;
+}
+
+function timeGetter(){
+    var today = new Date();
+    var hour = String(today.getHours() % 12 || 12);
+    var minutes = String(today.getMinutes() >= 9? today.getMinutes() : `0${today.getMinutes()}`)
+    var seconds = String(today.getSeconds() >= 9? today.getSeconds() : `0${today.getSeconds()}`)
+    var timeIndicator = hour >= 12? "am" : "pm"
+
+    return today = `${hour}:${minutes}:${seconds} ${timeIndicator}`;
+}
+
 const jwtverifier = (req, res, next) => {
     const tokenFromCommuter = req.headers["x-access-tokencommuter"];
     const tokenFromDriver = req.headers["x-access-tokendriver"];
@@ -262,6 +281,8 @@ app.post('/registerdriver', (req, res) => {
                         dlicense: req.body.dlicense,
                         age: req.body.age,
                         companyID: companyID,
+                        dateRegistered: dateGetter(),
+                        timeRegistered: timeGetter(),
                         status: false,
                         locationSharing: false
                     })
