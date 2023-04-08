@@ -498,11 +498,15 @@ app.post('/driverUpdateRoute', jwtverifier, (req, res) => {
     // console.log(userID, destination_one, destination_two);
 })
 
-app.get('/activeDriversRoute/:latitude/:longitude/:infotoggleclientstate', jwtverifier, (req, res) => {
+app.get('/activeDriversRoute/:stationID/:stationName/:stationIndex/:latitude/:longitude/:infotoggleclientstate', jwtverifier, (req, res) => {
     const userData = req.params.userData
     const infotoggle = req.params.userData.locationSharing
     const latitude = req.params.latitude;
     const longitude = req.params.longitude
+
+    const stationID = req.params.stationID;
+    const stationName = req.params.stationName;
+    const stationIndex = req.params.stationIndex;
 
     const infotoggleclientstate = req.params.infotoggleclientstate
     const userID = req.params.userData.userID
@@ -518,7 +522,12 @@ app.get('/activeDriversRoute/:latitude/:longitude/:infotoggleclientstate', jwtve
             activeDriversList[userData.userID] = {
                 ...userData,
                 latitude: latitude,
-                longitude: longitude
+                longitude: longitude,
+                fromStation:{
+                    stationID: stationID,
+                    stationName: stationName,
+                    stationIndex: stationIndex
+                }
             }
             // console.log("TRUE", infotoggle)
             // console.log(infotoggleclientstate)
