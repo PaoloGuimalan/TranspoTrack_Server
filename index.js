@@ -607,7 +607,7 @@ app.get('/getPosts', jwtverifier, (req, res) => {
         }
         else{
             // console.log(result);
-            res.send({status: true, result: result})
+            res.send({status: true, result: result.reverse()})
         }
     })
 })
