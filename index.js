@@ -532,12 +532,12 @@ app.get('/activeDriversRoute/:stationID/:stationName/:stationIndex/:latitude/:lo
             }
             // console.log("TRUE", infotoggle)
             // console.log(infotoggleclientstate)
-            res.send({status: true, message: "OK"})
+            res.send({status: true, message: "OK", result: activeDriversList})
         }
         else{
             // console.log("FALSE", infotoggle)
             delete activeDriversList[userData.userID]
-            res.send({status: true, message: "OK"})
+            res.send({status: true, message: "OK", result: activeDriversList})
         }
     }
     else{
@@ -549,7 +549,7 @@ app.get('/activeDriversRoute/:stationID/:stationName/:stationIndex/:latitude/:lo
             }
             else{
                 // console.log(infotoggleclientstate)
-                res.send({status: true, message: "OK"})
+                res.send({status: true, message: "OK", result: activeDriversList})
             }
         })
     }
