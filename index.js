@@ -36,6 +36,7 @@ const RoutesData = require("./schema/routes")
 const BusStopsData = require("./schema/busstops")
 const AssignedRoutes = require("./schema/assignedRoute")
 const WaitingData = require("./schema/waiting");
+const TripSchedules = require("./schema/tripschedules")
 
 const activeDriversList = Object.create(null)
 
@@ -680,6 +681,22 @@ app.get('/getWaitingCount', jwtverifier, (req, res) => {
         if(err){
             console.log(err)
             res.send({status: false, message: "Error generating waiting count"})
+        }
+        else{
+            res.send({status: true, result: result})
+        }
+    })
+})
+
+app.get('/getDriverTimeSchedule/:routeID', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const companyID = req.params.userData.companyID
+    const routeID = req.params.routeID
+
+    TripSchedules.find({routeID: routeID}, (err, result) => {
+        if(err){
+            console.log(err)
+            res.send({status: false, message: "Cannot generate Trip Schedules List"})
         }
         else{
             res.send({status: true, result: result})
