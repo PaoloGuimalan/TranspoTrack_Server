@@ -733,11 +733,11 @@ app.post('/postStationDeparture', jwtverifier, (req, res) => {
     res.send({status: true, message: "OK"})
 })
 
-const postDriverActivity = async (propID, actionType, userID, routeID, stationID, stationName, address, longitude, latitude, date, time) => {
+const postDriverActivity = (propID, actionType, userID, routeID, stationID, stationName, address, longitude, latitude, date, time) => {
 
     const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
-    await DriverActivities.findOne({activityID: propID}, (err, result) => {
+    DriverActivities.findOne({activityID: propID}, (err, result) => {
         if(err){
             console.log(err);
         }
