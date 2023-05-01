@@ -709,7 +709,7 @@ app.get('/getDriverTimeSchedule/:routeID', jwtverifier, (req, res) => {
 app.post('/postStationArrival', jwtverifier, (req, res) => {
     const userID = req.params.userData.userID
     const companyID = req.params.userData.companyID
-    const routeID = req.params.routeID
+    const routeID = req.body.routeID
 
     const stationID = req.body.stationID;
     const stationName = req.body.stationName;
