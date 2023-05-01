@@ -37,6 +37,8 @@ const BusStopsData = require("./schema/busstops")
 const AssignedRoutes = require("./schema/assignedRoute")
 const WaitingData = require("./schema/waiting");
 const TripSchedules = require("./schema/tripschedules")
+const UserActivities = require("./schema/useractivities")
+const DriverActivities = require("./schema/driveractivities")
 
 const activeDriversList = Object.create(null)
 
@@ -703,6 +705,117 @@ app.get('/getDriverTimeSchedule/:routeID', jwtverifier, (req, res) => {
         }
     })
 })
+
+app.post('/postStationArrival', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const companyID = req.params.userData.companyID
+    const routeID = req.params.routeID
+
+    const stationID = req.body.stationID;
+    const stationName = req.body.stationName;
+    const longitude = req.body.longitude;
+    const latitude = req.body.latitude;
+    const address = req.body.address;
+    const date = req.body.date;
+    const time = req.body.time;
+    const actionType = "Arrival"
+
+    postDriverActivity(`DA_${makeid(15)}`, actionType, userID, routeID, stationID, stationName, address, longitude, latitude, date, time)
+    
+    res.send({status: true, message: "OK"})
+})
+
+app.post('/postStationDeparture', jwtverifier, (req, res) => {
+    const userID = req.params.userData.userID
+    const companyID = req.params.userData.companyID
+    const routeID = req.params.routeID
+    
+    res.send({status: true, message: "OK"})
+})
+
+const postDriverActivity = async (propID, actionType, userID, routeID, stationID, stationName, address, longitude, latitude, date, time) => {
+
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
+    await DriverActivities.findOne({activityID: propID}, (err, result) => {
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(result == null){
+                var dateSplit = date.split("/")[0] // ex: "03"
+
+                const newDriverActivty = new DriverActivities({
+                    activityID: propID,
+                    userID: userID,
+                    routeID: routeID,
+                    action: {
+                        actionType: actionType,
+                        stationID: stationID,
+                        stationName: stationName,
+                        address: address,
+                        longitude: longitude,
+                        latitude: latitude
+                    },
+                    dateCommited: {
+                        dateRecorded: date,
+                        timeRecorded: time,
+                        monthName: labels[dateSplit.split("")[0] == "0"? parseInt(dateSplit.split("")[1]) - 1 : parseInt(dateSplit) - 1],
+                        monthNumber: dateSplit.split("")[0] == "0"? parseInt(dateSplit.split("")[1]) : parseInt(dateSplit)
+                    }
+                })
+
+                newDriverActivty.save().then(() => {
+
+                }).catch((err) => {
+                    console.log(err)
+                })
+            }
+            else{
+                postDriverActivity(`DA_${makeid(15)}`, actionType, userID, routeID, stationID, stationName, address, longitude, latitude, date, time)
+            }
+        }
+    })
+}
+
+const postUserActivity = async (propID, userType, userID, action, platform) => {
+
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
+    await UserActivities.findOne({activityID: propID}, (err, result) => {
+        if(err){
+            console.log(err);
+        }
+        else{
+            if(result == null){
+                var dateSplit = dateGetter().split("/")[0] // ex: "03"
+
+                const newUserActivty = new UserActivities({
+                    activityID: propID,
+                    userType: userType,
+                    userID: userID,
+                    action: action,
+                    dateCommited: {
+                        dateRecorded: dateGetter(),
+                        timeRecorded: timeGetter(),
+                        monthName: labels[dateSplit.split("")[0] == "0"? parseInt(dateSplit.split("")[1]) - 1 : parseInt(dateSplit) - 1],
+                        monthNumber: dateSplit.split("")[0] == "0"? parseInt(dateSplit.split("")[1]) : parseInt(dateSplit)
+                    },
+                    platform: platform
+                })
+
+                newUserActivty.save().then(() => {
+
+                }).catch((err) => {
+                    console.log(err)
+                })
+            }
+            else{
+                postUserActivity(`UA_${makeid(15)}`, userType, userID, action, platform)
+            }
+        }
+    })
+}
 
 
 //SOCKET SECTION
